@@ -1,8 +1,27 @@
 use rand::prelude::*;
+use rayon::prelude::*;
 
 use std::time;
 
 type Matrix = Vec<Vec<usize>>;
+
+fn rayon_multiply_steroids(m1: Matrix, m2: Matrix, result: &mut Matrix) {
+	let size = m1.len();
+	result.par_iter_mut().enumerate().for_each(|(i, row)| {
+		row.par_iter_mut()
+			.enumerate()
+			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][i]))
+	})
+}
+
+fn rayon_multiply(m1: Matrix, m2: Matrix, result: &mut Matrix) {
+	let size = m1.len();
+	result.par_iter_mut().enumerate().for_each(|(i, row)| {
+		row.iter_mut()
+			.enumerate()
+			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][i]))
+	})
+}
 
 fn regular_multiply(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	let size = m1.len();
@@ -29,5 +48,8 @@ fn benchmark(method: fn(Matrix, Matrix, &mut Matrix), size: usize) -> u128 {
 }
 
 fn main() {
-	benchmark(regular_multiply, 3);
+	let size = 1000;
+	println!("{}", benchmark(regular_multiply, size));
+	println!("{}", benchmark(rayon_multiply, size));
+	println!("{}", benchmark(rayon_multiply_steroids, size));
 }
