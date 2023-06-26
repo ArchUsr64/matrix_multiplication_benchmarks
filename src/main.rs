@@ -10,7 +10,7 @@ fn rayon_multiply_steroids(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	result.par_iter_mut().enumerate().for_each(|(i, row)| {
 		row.par_iter_mut()
 			.enumerate()
-			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][i]))
+			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][j]))
 	})
 }
 
@@ -19,7 +19,7 @@ fn rayon_multiply(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	result.par_iter_mut().enumerate().for_each(|(i, row)| {
 		row.iter_mut()
 			.enumerate()
-			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][i]))
+			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][j]))
 	})
 }
 
@@ -28,7 +28,7 @@ fn regular_multiply(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	result.iter_mut().enumerate().for_each(|(i, row)| {
 		row.iter_mut()
 			.enumerate()
-			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][i]))
+			.for_each(|(j, cell)| (0..size).for_each(|k| *cell += m1[i][k] * m2[k][j]))
 	})
 }
 
@@ -48,7 +48,7 @@ fn benchmark(method: fn(Matrix, Matrix, &mut Matrix), size: usize) -> u128 {
 }
 
 fn main() {
-	let size = 1000;
+	let size = 10;
 	println!("{}", benchmark(regular_multiply, size));
 	println!("{}", benchmark(rayon_multiply, size));
 	println!("{}", benchmark(rayon_multiply_steroids, size));
