@@ -3,7 +3,17 @@ use rayon::prelude::*;
 
 use std::time;
 
-type Matrix = Vec<Vec<usize>>;
+type Matrix = Vec<Vec<i32>>;
+
+#[link(name = "main")]
+extern "C" {
+	fn matrix_multiply_c_ffi(
+		m1: *const cty::c_int,
+		m2: *const cty::c_int,
+		result: *mut cty::c_int,
+		size: cty::c_uint,
+	) -> cty::c_uint;
+}
 
 fn rayon_multiply_steroids(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	let size = m1.len();
@@ -32,7 +42,7 @@ fn regular_multiply(m1: Matrix, m2: Matrix, result: &mut Matrix) {
 	})
 }
 
-fn gen_matrix(size: usize) -> Vec<Vec<usize>> {
+fn gen_matrix(size: usize) -> Matrix {
 	let mut result = vec![vec![0; size]; size];
 	(0..size).for_each(|i| (0..size).for_each(|j| result[i][j] = random()));
 	result
@@ -52,4 +62,15 @@ fn main() {
 	println!("{}", benchmark(regular_multiply, size));
 	println!("{}", benchmark(rayon_multiply, size));
 	println!("{}", benchmark(rayon_multiply_steroids, size));
+	let mut result = vec![vec![0; size]; size];
+	unsafe {
+		let x = matrix_multiply_c_ffi(
+			gen_matrix(size)[0].as_ptr(),
+			gen_matrix(size)[0].as_ptr(),
+			result[0].as_mut_ptr(),
+			size as u32,
+		);
+		println!("{result:?}");
+		println!("{x:?}");
+	}
 }
